@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const getAllUsers = async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT id, fullname, username, created_at, updated_at FROM users');
+        const [rows] = await pool.query('SELECT id, lastname, firstname, username, gender, created_at, updated_at FROM users');
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -15,7 +15,7 @@ const getUserById = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const [rows] = await pool.query('SELECT id, fullname, username, created_at, updated_at FROM users WHERE id = ?', [id]);
+        const [rows] = await pool.query('SELECT id, lastname, firstname, username, gender, created_at, updated_at FROM users WHERE id = ?', [id]); // Include gender
 
         if (rows.length === 0) {
             return res.status(404).json({ error: 'User not found' });
@@ -28,11 +28,17 @@ const getUserById = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
-    const { fullname, username, password } = req.body;
+    const { lastname, firstname, username, password, gender } = req.body; // Include gender
+
+    // Validate gender input
+    if (gender !== 'M' && gender !== 'F') {
+        return res.status(400).json({ error: 'Must be M or F.' });
+    }
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const [result] = await pool.query('INSERT INTO users (fullname, username, passwordx) VALUES (?, ?, ?)', [fullname, username, hashedPassword]);
+        const [result] = await pool.query('INSERT INTO users (lastname, firstname, username, passwordx, gender) VALUES (?, ?, ?, ?, ?)', 
+        [lastname, firstname, username, hashedPassword, gender]); // Insert gender
 
         res.status(201).json({ message: 'User created successfully', userId: result.insertId });
     } catch (err) {
@@ -42,11 +48,19 @@ const createUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
     const { id } = req.params;
-    const { fullname, username, password } = req.body;
+    const { lastname, firstname, username, passwordx, gender } = req.body; // Use lastname and firstname
+
+    // Validate gender input
+    if (gender !== 'M' && gender !== 'F') {
+        return res.status(400).json({ error: 'Invalid gender value. Must be M or F.' });
+    }
 
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const [result] = await pool.query('UPDATE users SET fullname = ?, username = ?, passwordx = ? WHERE id = ?', [fullname, username, hashedPassword, id]);
+        const hashedPassword = await bcrypt.hash(passwordx, 10); // Hash passwordx
+        const [result] = await pool.query(
+            'UPDATE users SET lastname = ?, firstname = ?, username = ?, passwordx = ?, gender = ? WHERE id = ?', 
+            [lastname, firstname, username, hashedPassword, gender, id] // Update with new fields
+        );
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'User not found' });
@@ -57,6 +71,7 @@ const updateUser = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
 
 const deleteUser = async (req, res) => {
     const { id } = req.params;

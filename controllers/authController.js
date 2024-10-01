@@ -4,17 +4,25 @@ const jwt = require('jsonwebtoken');
 
 const register = async (req, res) => {
     console.log('Register endpoint hit');
-    const { fullname, username, passwordx } = req.body;
+    const { lastname, firstname, username, passwordx, gender } = req.body; // Include gender
+
+    // Validate gender input to ensure it's either 'M' or 'F'
+    if (gender !== 'M' && gender !== 'F') {
+        return res.status(400).json({ error: 'Must be M or F.' });
+    }
 
     try {
         const hashedPassword = await bcrypt.hash(passwordx, 10);
-        const [rows] = await pool.query('INSERT INTO users (fullname, username, passwordx) VALUES (?, ?, ?)', 
-        [fullname, username, hashedPassword]);
+        const [rows] = await pool.query(
+            'INSERT INTO users (lastname, firstname, username, passwordx, gender) VALUES (?, ?, ?, ?, ?)', 
+            [lastname, firstname, username, hashedPassword, gender] // Include gender in the insert query
+        );
         res.status(201).json({ message: 'User registered successfully!' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+
 
 const login = async (req, res) => {
     console.log('Login endpoint hit');
