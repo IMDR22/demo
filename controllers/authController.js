@@ -17,7 +17,7 @@ const register = async (req, res) => {
             'INSERT INTO users (lastname, firstname, username, passwordx, gender) VALUES (?, ?, ?, ?, ?)', 
             [lastname, firstname, username, hashedPassword, gender] // Include gender in the insert query
         );
-        res.status(201).json({ message: 'User registered successfully!',  userId: result.insertId });
+        res.status(201).json({ message: 'User registered successfully!'});
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

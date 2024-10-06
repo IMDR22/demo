@@ -1,4 +1,5 @@
 const pool = require ("../config/database");
+const jwt = require('jsonwebtoken');
 
 const getAllDepartments = async (req, res) => {
     try {
@@ -44,12 +45,12 @@ const createDepartment = async (req, res) => {
 
 
 const updateDepartment = async (req, res) => {
-    const { course_id } = req.params;
+    const { id } = req.params;
     const { dept_code, dept_name, user_id } = req.body;
 
     try {
         const [result] = await pool.query('UPDATE departments SET dept_code = ?, dept_name = ?, user_id = ? WHERE dept_id = ?', 
-        [dept_code, dept_name, user_id, course_id]);
+        [dept_code, dept_name, user_id, id]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'Department not found' });

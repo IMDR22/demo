@@ -14,7 +14,7 @@ app.use(express.json());
 
 // Routes
 app.get('/', (req, res) => {
-    res.send("Fritz Imperial, MIT");
+    res.send("Ian De los Reyes, MIT");
 });
 
 // Use authentication routes
